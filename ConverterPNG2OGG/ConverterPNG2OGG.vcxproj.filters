@@ -38,13 +38,30 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="lib\libogg.dll" />
+    <Library Include="lib\libogg.lib">
+      <Filter>Файлы ресурсов</Filter>
+    </Library>
+    <Library Include="lib\libogg_static.lib">
+      <Filter>Файлы ресурсов</Filter>
+    </Library>
+    <Library Include="lib\libvorbis.lib">
+      <Filter>Файлы ресурсов</Filter>
+    </Library>
+    <Library Include="lib\libvorbis_static.lib">
+      <Filter>Файлы ресурсов</Filter>
+    </Library>
+    <Library Include="lib\libvorbisfile.lib">
+      <Filter>Файлы ресурсов</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="lib\libogg.lib" />
-    <Library Include="lib\libogg_static.lib" />
-    <Library Include="lib\libvorbis.lib" />
-    <Library Include="lib\libvorbis_static.lib" />
-    <Library Include="lib\libvorbisfile.lib" />
+    <ClCompile Include="main.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lib\libogg.dll">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
   </ItemGroup>
 </Project>
