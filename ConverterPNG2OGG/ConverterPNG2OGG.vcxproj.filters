@@ -63,5 +63,6 @@
     <None Include="lib\libogg.dll">
       <Filter>Файлы ресурсов</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
