@@ -27,14 +27,24 @@
     <ClInclude Include="include\ogg\os_types.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="include\vorbis\codec.h">
+    <ClInclude Include="include\vorbis\vorbisfile.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
     <ClInclude Include="include\vorbis\vorbisenc.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="include\vorbis\vorbisfile.h">
+    <ClInclude Include="include\vorbis\codec.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lib\libogg.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\libogg.lib" />
+    <Library Include="lib\libogg_static.lib" />
+    <Library Include="lib\libvorbis.lib" />
+    <Library Include="lib\libvorbis_static.lib" />
+    <Library Include="lib\libvorbisfile.lib" />
   </ItemGroup>
 </Project>

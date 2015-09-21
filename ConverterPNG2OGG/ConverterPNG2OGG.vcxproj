@@ -25,6 +25,16 @@
     <ClInclude Include="include\vorbis\vorbisenc.h" />
     <ClInclude Include="include\vorbis\vorbisfile.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="lib\libogg.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\libogg.lib" />
+    <Library Include="lib\libogg_static.lib" />
+    <Library Include="lib\libvorbis.lib" />
+    <Library Include="lib\libvorbisfile.lib" />
+    <Library Include="lib\libvorbis_static.lib" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5F8620D8-EB4E-49A3-BB69-E33D8626597A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
