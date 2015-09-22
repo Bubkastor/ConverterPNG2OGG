@@ -1,11 +1,17 @@
-#include <theora\theoraenc.h>
+#include "PNG_Converter.h"
 
-static th_info ti;
-static th_enc_ctx *td;
 
-void main()
+void main(int argc, char *argv[])
 {
-	
-	th_info_init(&ti);
-	th_info_clear(&ti);
+	if (argc < 3) {
+		std::cout << "Low parametr" << std::endl;
+	}
+	{
+		using namespace std;
+		string inFolder = argv[1];
+		string ouFolder = argv[2];
+		cout << "input: " << inFolder << std::endl;
+		cout << "output: " << ouFolder << std::endl;
+		PNG_Converter convert = PNG_Converter(inFolder);
+	}
 }
