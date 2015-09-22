@@ -13,46 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="include">
-      <UniqueIdentifier>{3f4b5808-1c1b-4e62-8342-ff58e9e92902}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="lib">
-      <UniqueIdentifier>{f62bf3cf-609c-4228-8946-0ed5fd3399ef}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\ogg\ogg.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="include\ogg\os_types.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="include\vorbis\vorbisfile.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="include\vorbis\vorbisenc.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="include\vorbis\codec.h">
-      <Filter>Заголовочные файлы</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="lib\libogg.lib">
-      <Filter>Файлы ресурсов</Filter>
-    </Library>
-    <Library Include="lib\libogg_static.lib">
-      <Filter>Файлы ресурсов</Filter>
-    </Library>
-    <Library Include="lib\libvorbis.lib">
-      <Filter>Файлы ресурсов</Filter>
-    </Library>
-    <Library Include="lib\libvorbis_static.lib">
-      <Filter>Файлы ресурсов</Filter>
-    </Library>
-    <Library Include="lib\libvorbisfile.lib">
-      <Filter>Файлы ресурсов</Filter>
-    </Library>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -60,9 +20,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="lib\libogg.dll">
-      <Filter>Файлы ресурсов</Filter>
-    </None>
     <None Include="packages.config" />
   </ItemGroup>
 </Project>

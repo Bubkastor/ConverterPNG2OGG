@@ -1,9 +1,11 @@
-#include <iostream>
 #include <theora\theoraenc.h>
-#include <png.h>
+
 static th_info ti;
+static th_enc_ctx *td;
+
 void main()
 {
-	png_init_io
+	
 	th_info_init(&ti);
+	th_info_clear(&ti);
 }
