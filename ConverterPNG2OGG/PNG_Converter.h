@@ -20,7 +20,7 @@ public:
 private:
 	std::vector<boost::filesystem::path> GetAllPathInFolder(std::string pathRead);
 	void ErrorFile(std::string path);
-
+	bool CheckExtension(boost::filesystem::path path);
 	boost::filesystem::path m_pathFolder;
 	std::vector<boost::filesystem::path> m_pathAllFile;
 
