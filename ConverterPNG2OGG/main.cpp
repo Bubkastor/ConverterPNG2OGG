@@ -16,6 +16,6 @@ void main(int argc, char *argv[])
 		convert.MakeYcbcr();
 		std::vector<th_img_plane*> yCbCr = convert.GetYcbcr();
 
-		YCbCr_ConverterToOgg convOgg = YCbCr_ConverterToOgg(yCbCr);
+		YCbCr_ConverterToOgg convOgg = YCbCr_ConverterToOgg(yCbCr, ouFolder);
 	}
 }
