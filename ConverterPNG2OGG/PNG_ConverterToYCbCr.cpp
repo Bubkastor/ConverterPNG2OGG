@@ -6,7 +6,7 @@ PNG_ConverterToYCbCr::PNG_ConverterToYCbCr(std::string path) :
 	m_pathFolder(path)
 {
 	m_pathAllFile = GetAllPathInFolder(path);
-	}
+}
 
 PNG_ConverterToYCbCr::~PNG_ConverterToYCbCr()
 {
@@ -53,9 +53,6 @@ void PNG_ConverterToYCbCr::MakeYcbcr()
 		}
 		
 		RGBToYUV(arrayRGBA, ycbcr_ptr, width, height);
-
-		
-		
 		m_arrayYcbcrBuffer.push_back(ycbcr_ptr);		
 	}
 	
