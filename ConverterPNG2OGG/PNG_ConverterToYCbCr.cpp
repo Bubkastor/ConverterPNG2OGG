@@ -1,19 +1,19 @@
-#include "PNG_Converter.h"
+#include "PNG_ConverterToYCbCr.h"
 
 boost::filesystem::path PNG_EXTENSION = ".png";
 
-PNG_Converter::PNG_Converter(std::string path) :
+PNG_ConverterToYCbCr::PNG_ConverterToYCbCr(std::string path) :
 	m_pathFolder(path)
 {
 	m_pathAllFile = GetAllPathInFolder(path);
 	}
 
-PNG_Converter::~PNG_Converter()
+PNG_ConverterToYCbCr::~PNG_ConverterToYCbCr()
 {
 }
 
 
-void PNG_Converter::MakeYcbcr()
+void PNG_ConverterToYCbCr::MakeYcbcr()
 {
 	for (size_t i = 0; i < m_pathAllFile.size(); i++)
 	{
@@ -56,17 +56,17 @@ void PNG_Converter::MakeYcbcr()
 
 		
 		
-		m_arrayYcbcrBuffer.push_back(ycbcr_ptr);				
+		m_arrayYcbcrBuffer.push_back(ycbcr_ptr);		
 	}
 	
 }
 
-std::vector<th_img_plane*> PNG_Converter::GetYcbcr()
+std::vector<th_img_plane*> PNG_ConverterToYCbCr::GetYcbcr()
 {
 	return m_arrayYcbcrBuffer;
 }
 
-std::vector<std::vector<RGB>> PNG_Converter::RGBAtoRGBArray(std::vector<unsigned char> input, unsigned int width) const
+std::vector<std::vector<RGB>> PNG_ConverterToYCbCr::RGBAtoRGBArray(std::vector<unsigned char> input, unsigned int width) const
 {
 	std::vector<std::vector<RGB>> result;
 	std::vector<RGB> line;	
@@ -98,7 +98,7 @@ static unsigned char clamp(int d)
 
 	return d;
 }
-void PNG_Converter::RGBToYUV(std::vector<std::vector<RGB>> arrayRGB, th_img_plane *ycbcr_ptr, unsigned int w, unsigned int h)
+void PNG_ConverterToYCbCr::RGBToYUV(std::vector<std::vector<RGB>> arrayRGB, th_img_plane *ycbcr_ptr, unsigned int w, unsigned int h)
 {
 	unsigned int x;
 	unsigned int y;
@@ -122,7 +122,7 @@ void PNG_Converter::RGBToYUV(std::vector<std::vector<RGB>> arrayRGB, th_img_plan
 	
 }
 
-std::vector<boost::filesystem::path> PNG_Converter::GetAllPathInFolder(std::string pathRead)
+std::vector<boost::filesystem::path> PNG_ConverterToYCbCr::GetAllPathInFolder(std::string pathRead)
 {
 	using namespace boost::filesystem;
 	std::vector<boost::filesystem::path> result;
@@ -137,12 +137,12 @@ std::vector<boost::filesystem::path> PNG_Converter::GetAllPathInFolder(std::stri
 	return result;
 }
 
-void PNG_Converter::ErrorFile(std::string path)
+void PNG_ConverterToYCbCr::ErrorFile(std::string path)
 {
 	std::cout << path << " not png" << std::endl;
 }
 
-bool PNG_Converter::CheckExtension(boost::filesystem::path path)
+bool PNG_ConverterToYCbCr::CheckExtension(boost::filesystem::path path)
 {
 	return path.extension() == PNG_EXTENSION;
 }

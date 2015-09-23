@@ -13,11 +13,11 @@ struct RGB
 	unsigned char B;
 };
 
-class PNG_Converter
+class PNG_ConverterToYCbCr
 {
 public:
-	PNG_Converter(std::string path);
-	~PNG_Converter();
+	PNG_ConverterToYCbCr(std::string path);
+	~PNG_ConverterToYCbCr();
 
 	void MakeYcbcr();
 	std::vector<th_img_plane*> GetYcbcr();

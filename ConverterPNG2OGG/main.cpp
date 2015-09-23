@@ -1,4 +1,4 @@
-#include "PNG_Converter.h"
+#include "PNG_ConverterToYCbCr.h"
 #include <lodepng.h>
 
 void main(int argc, char *argv[])
@@ -10,8 +10,8 @@ void main(int argc, char *argv[])
 		using namespace std;
 		string inFolder = argv[1];
 		string ouFolder = argv[2];
-		PNG_Converter convert = PNG_Converter(inFolder);
-
+		PNG_ConverterToYCbCr convert = PNG_ConverterToYCbCr(inFolder);
 		convert.MakeYcbcr();
+		auto yCbCr = convert.GetYcbcr();
 	}
 }
