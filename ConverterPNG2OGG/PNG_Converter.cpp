@@ -6,7 +6,7 @@ PNG_Converter::PNG_Converter(std::string path) :
 	m_pathFolder(path)
 {
 	m_pathAllFile = GetAllPathInFolder(path);
-}
+	}
 
 PNG_Converter::~PNG_Converter()
 {
@@ -15,52 +15,55 @@ PNG_Converter::~PNG_Converter()
 
 void PNG_Converter::MakeYcbcr()
 {
-	std::string filename = m_pathAllFile.at(0).string();
-	
-	std::vector<unsigned char> png;
-	std::vector<unsigned char> image;
-	unsigned width, height;
-	unsigned int yuv_w;
-	unsigned int yuv_h;
-
-	lodepng::load_file(png, filename);
-	unsigned error = lodepng::decode(image, width, height, png);
-
-	if (error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
-
-	auto arrayRGBA = RGBAtoRGBArray(image, width);
-	
-	yuv_w = (width + 15) & ~15;
-	yuv_h = (height + 15) & ~15;
-	th_ycbcr_buffer ycbcr;
-	ycbcr[0].data = 0;
-	if (!ycbcr[0].data)
+	for (size_t i = 0; i < m_pathAllFile.size(); i++)
 	{
-		ycbcr[0].width = yuv_w;
-		ycbcr[0].height = yuv_h;
-		ycbcr[0].stride = yuv_w;
-		ycbcr[1].width = yuv_w;
-		ycbcr[1].stride = ycbcr[1].width;
-		ycbcr[1].height = yuv_h;
-		ycbcr[2].width = ycbcr[1].width;
-		ycbcr[2].stride = ycbcr[1].stride;
-		ycbcr[2].height = ycbcr[1].height;
+		std::string filename = m_pathAllFile.at(i).string();
 
-		ycbcr[0].data = (unsigned char*)malloc(ycbcr[0].stride * ycbcr[0].height);
-		ycbcr[1].data = (unsigned char*)malloc(ycbcr[1].stride * ycbcr[1].height);
-		ycbcr[2].data = (unsigned char*)malloc(ycbcr[2].stride * ycbcr[2].height);
+		std::vector<unsigned char> png;
+		std::vector<unsigned char> image;
+		unsigned width, height;
+		unsigned int yuv_w;
+		unsigned int yuv_h;
+
+		lodepng::load_file(png, filename);
+		unsigned error = lodepng::decode(image, width, height, png);
+
+		if (error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+
+		auto arrayRGBA = RGBAtoRGBArray(image, width);
+		yuv_w = (width + 15) & ~15;
+		yuv_h = (height + 15) & ~15;
+
+		
+ 		th_img_plane *ycbcr_ptr = new th_img_plane[3];
+				{
+			ycbcr_ptr[0].width = yuv_w;
+			ycbcr_ptr[0].height = yuv_h;
+			ycbcr_ptr[0].stride = yuv_w;
+			ycbcr_ptr[1].width = yuv_w;
+			ycbcr_ptr[1].stride = ycbcr_ptr[1].width;
+			ycbcr_ptr[1].height = yuv_h;
+			ycbcr_ptr[2].width = ycbcr_ptr[1].width;
+			ycbcr_ptr[2].stride = ycbcr_ptr[1].stride;
+			ycbcr_ptr[2].height = ycbcr_ptr[1].height;
+
+			ycbcr_ptr[0].data = (unsigned char*)malloc(ycbcr_ptr[0].stride * ycbcr_ptr[0].height);
+			ycbcr_ptr[1].data = (unsigned char*)malloc(ycbcr_ptr[1].stride * ycbcr_ptr[1].height);
+			ycbcr_ptr[2].data = (unsigned char*)malloc(ycbcr_ptr[2].stride * ycbcr_ptr[2].height);
+		}
+		
+		RGBToYUV(arrayRGBA, ycbcr_ptr, width, height);
+
+		
+		
+		m_arrayYcbcrBuffer.push_back(ycbcr_ptr);				
 	}
-
-	RGBToYUV(arrayRGBA, ycbcr, width, height);
-
-	//m_arrayYcbcrBuffer.push_back(ycbcr);
-
-	std::cout << "complete RGBtoYUV" << std::endl;
+	
 }
 
-std::vector<th_ycbcr_buffer> PNG_Converter::GetYcbcr()
+std::vector<th_img_plane*> PNG_Converter::GetYcbcr()
 {
-	return std::vector<th_ycbcr_buffer>();
+	return m_arrayYcbcrBuffer;
 }
 
 std::vector<std::vector<RGB>> PNG_Converter::RGBAtoRGBArray(std::vector<unsigned char> input, unsigned int width) const
@@ -95,26 +98,14 @@ static unsigned char clamp(int d)
 
 	return d;
 }
-void PNG_Converter::RGBToYUV(std::vector<std::vector<RGB>> arrayRGB, th_ycbcr_buffer ycbcr, unsigned int w, unsigned int h)
+void PNG_Converter::RGBToYUV(std::vector<std::vector<RGB>> arrayRGB, th_img_plane *ycbcr_ptr, unsigned int w, unsigned int h)
 {
 	unsigned int x;
 	unsigned int y;
-
-	unsigned int x1;
-	unsigned int y1;
-
 	unsigned long yuv_w;
-
-	unsigned char *yuv_y;
-	unsigned char *yuv_u;
-	unsigned char *yuv_v;
-
-	yuv_w = ycbcr[0].width;
-
-	yuv_y = ycbcr[0].data;
-	yuv_u = ycbcr[1].data;
-	yuv_v = ycbcr[2].data;
-
+	
+	yuv_w = ycbcr_ptr[0].width;
+	
 	for (y = 0; y < h; y++)
 	{
 		for (x = 0; x < w; x++)
@@ -123,9 +114,9 @@ void PNG_Converter::RGBToYUV(std::vector<std::vector<RGB>> arrayRGB, th_ycbcr_bu
 			unsigned char g = arrayRGB[y][x].G;
 			unsigned char b = arrayRGB[y][x].B;
 
-			yuv_y[x + y * yuv_w] = clamp((65481 * r + 128553 * g + 24966 * b + 4207500) / 255000);
-			yuv_u[x + y * yuv_w] = clamp((-33488 * r - 65744 * g + 99232 * b + 29032005) / 225930);
-			yuv_v[x + y * yuv_w] = clamp((157024 * r - 131488 * g - 25536 * b + 45940035) / 357510);
+			ycbcr_ptr[0].data[x + y * yuv_w] = clamp((65481 * r + 128553 * g + 24966 * b + 4207500) / 255000);
+			ycbcr_ptr[1].data[x + y * yuv_w] = clamp((-33488 * r - 65744 * g + 99232 * b + 29032005) / 225930);
+			ycbcr_ptr[2].data[x + y * yuv_w] = clamp((157024 * r - 131488 * g - 25536 * b + 45940035) / 357510);
 		}
 	}
 	
