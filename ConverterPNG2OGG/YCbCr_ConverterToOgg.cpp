@@ -26,8 +26,11 @@ void YCbCr_ConverterToOgg::Convert()
 	auto element = m_arrayYcbcrBuffer[0];
 
 	SetFrameParameter(element->width, element->height);
-	std::ofstream ofs(m_outputFile, std::ofstream::out);
 
+	std::ofstream ofs(m_outputFile, std::ofstream::binary);
+	//FILE* outFil;
+
+	//fopen_s(&outFil, m_outputFile.c_str(), "w");
 
 	for (size_t i = 0; i < m_arrayYcbcrBuffer.size(); i++)
 	{
@@ -40,12 +43,11 @@ void YCbCr_ConverterToOgg::Convert()
 		unsigned char c = 'c';
 		unsigned char * out = &c;
 		
-		int outSize;
 		if (!EncodeFrame(ycbcr, ofs))
 			std::cout << "frame not encoder (((" << std::endl;
 	}
-
 	ofs.close();
+	//fclose(outFil);
 }
 
 bool YCbCr_ConverterToOgg::EncodeFrame(th_ycbcr_buffer ycbcr, std::ofstream& ofs)
@@ -81,12 +83,9 @@ bool YCbCr_ConverterToOgg::EncodeFrame(th_ycbcr_buffer ycbcr, std::ofstream& ofs
 		ret = ogg_stream_flush(&m_ogg_os, &m_og);
 		if (ret)
 		{
-			//memcpy(out + outSize, &m_og.header_len, sizeof(long));
-			//memcpy(out + outSize + sizeof(long), &m_og.body_len, sizeof(long));
-			//memcpy(out + outSize + 2 * sizeof(long), m_og.header, m_og.header_len);
-			//memcpy(out + outSize + 2 * sizeof(long) + m_og.header_len, m_og.body, m_og.body_len);
-			//outSize += m_og.header_len + m_og.body_len + 2 * sizeof(long);
-			ofs << m_og.header_len << m_og.body_len << m_og.header << m_og.body;
+			ofs << m_og.header << m_og.body;
+			//fwrite(m_og.header, m_og.header_len, 1, out);
+			//fwrite(m_og.body, 1, m_og.body_len, out);
 			return true;
 
 		}
@@ -150,7 +149,9 @@ bool YCbCr_ConverterToOgg::InitEncode(std::ofstream& ofs)
 		std::cout << "Internal Ogg library Error!" << std::endl;
 		return false;
 	}
-	ofs << m_og.header_len << m_og.body_len << m_og.header << m_og.body;
+	ofs <<  m_og.header << m_og.body;
+	//fwrite(m_og.header,1 , m_og.header_len, out);
+	//fwrite(m_og.body, 1, m_og.body_len, out);
 	
 	for (;;)
 	{
@@ -179,6 +180,8 @@ bool YCbCr_ConverterToOgg::InitEncode(std::ofstream& ofs)
 		if (result == 0)break;
 
 		ofs << m_og.header_len << m_og.body_len << m_og.header << m_og.body;
+		//fwrite(m_og.header, 1, m_og.header_len,  out);
+		//fwrite(m_og.body, 1, m_og.body_len,  out);
 	}
 	return true;
 
