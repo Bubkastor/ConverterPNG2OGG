@@ -18,6 +18,8 @@ public:
 private:
 	bool InitEncode(std::ofstream& ofs);
 
+
+	FILE *ogg_fp;
 	std::string m_outputFile;
 	th_enc_ctx *m_encoder;
 	th_info m_ti;

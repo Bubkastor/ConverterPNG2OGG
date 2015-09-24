@@ -27,10 +27,10 @@ void YCbCr_ConverterToOgg::Convert()
 
 	SetFrameParameter(element->width, element->height);
 
-	std::ofstream ofs(m_outputFile, std::ofstream::binary);
-	//FILE* outFil;
+	//std::ofstream ofs(m_outputFile, std::ofstream::binary);
+	FILE* outFil;
 
-	//fopen_s(&outFil, m_outputFile.c_str(), "w");
+	fopen_s(&ogg_fp, m_outputFile.c_str(), "w+");
 
 	for (size_t i = 0; i < m_arrayYcbcrBuffer.size(); i++)
 	{
@@ -40,23 +40,22 @@ void YCbCr_ConverterToOgg::Convert()
 		ycbcr[0] = it[0];
 		ycbcr[1] = it[1];
 		ycbcr[2] = it[2];
-		unsigned char c = 'c';
-		unsigned char * out = &c;
 		
-		if (!EncodeFrame(ycbcr, ofs))
+		
+		if (!EncodeFrame(ycbcr))
 			std::cout << "frame not encoder (((" << std::endl;
 	}
-	ofs.close();
-	//fclose(outFil);
+	//ofs.close();
+	fclose(ogg_fp);
 }
 
-bool YCbCr_ConverterToOgg::EncodeFrame(th_ycbcr_buffer ycbcr, std::ofstream& ofs)
+bool YCbCr_ConverterToOgg::EncodeFrame(th_ycbcr_buffer ycbcr)
 {
 	int ret;
 	if (m_encoder == NULL)
 	{
 		bool ret;
-		ret = InitEncode(ofs);
+		ret = InitEncode();
 		if (!ret)
 		{
 			std::cout << "initial encoder failed!" << std::endl;
@@ -83,9 +82,9 @@ bool YCbCr_ConverterToOgg::EncodeFrame(th_ycbcr_buffer ycbcr, std::ofstream& ofs
 		ret = ogg_stream_flush(&m_ogg_os, &m_og);
 		if (ret)
 		{
-			ofs << m_og.header << m_og.body;
-			//fwrite(m_og.header, m_og.header_len, 1, out);
-			//fwrite(m_og.body, 1, m_og.body_len, out);
+			fwrite(m_og.header, 1, m_og.header_len, ogg_fp);
+			fwrite(m_og.body, 1, m_og.body_len, ogg_fp);
+
 			return true;
 
 		}
@@ -131,13 +130,14 @@ bool YCbCr_ConverterToOgg::InitEncode(std::ofstream& ofs)
 		th_info_clear(&m_ti);
 		return false;
 	}
-
-	th_comment_init(&m_tc);
 	if (ogg_stream_init(&m_ogg_os, rand()) < 0)
 	{
 		std::cout << "ogg stream not created" << std::endl;
 		return false;
 	}
+
+	th_comment_init(&m_tc);
+
 	if (th_encode_flushheader(m_encoder, &m_tc, &m_op) <= 0)
 	{
 		std::cout << "Internal Theora Library Error!" << std::endl;
@@ -149,10 +149,9 @@ bool YCbCr_ConverterToOgg::InitEncode(std::ofstream& ofs)
 		std::cout << "Internal Ogg library Error!" << std::endl;
 		return false;
 	}
-	ofs <<  m_og.header << m_og.body;
-	//fwrite(m_og.header,1 , m_og.header_len, out);
-	//fwrite(m_og.body, 1, m_og.body_len, out);
-	
+	// todo https://github.com/pkrumins/node-video/blob/master/src/video_encoder.cpp
+
+		
 	for (;;)
 	{
 		ret = th_encode_flushheader(m_encoder, &m_tc, &m_op);
@@ -179,9 +178,8 @@ bool YCbCr_ConverterToOgg::InitEncode(std::ofstream& ofs)
 		}
 		if (result == 0)break;
 
-		ofs << m_og.header_len << m_og.body_len << m_og.header << m_og.body;
-		//fwrite(m_og.header, 1, m_og.header_len,  out);
-		//fwrite(m_og.body, 1, m_og.body_len,  out);
+		fwrite(m_og.header, m_og.header_len, 1, ogg_fp);
+		fwrite(m_og.body, og.body_len, 1, ogg_fp);
 	}
 	return true;
 
