@@ -22,11 +22,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="example.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PNG_ConverterToYCbCr.cpp" />
     <ClCompile Include="YCbCr_ConverterToOgg.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="example.h" />
     <ClInclude Include="PNG_ConverterToYCbCr.h" />
     <ClInclude Include="YCbCr_ConverterToOgg.h" />
   </ItemGroup>
