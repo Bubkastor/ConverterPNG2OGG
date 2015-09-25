@@ -1,62 +1,72 @@
 #include "YCbCr_ConverterToOgg.h"
 #include <cmath>
 
-YCbCr_ConverterToOgg::YCbCr_ConverterToOgg(std::vector<th_img_plane*> YcbcrBuffer, std::string outputFileName) :
-	outputFileName(outputFileName), arrayYcbcrBuffer(YcbcrBuffer),
-	quality(1),
+static int chroma_format = TH_PF_420;
+
+static inline unsigned char yuv_clamp(double d)
+{
+	if (d < 0) return 0;
+	if (d > 255) return 255;
+	return d;
+}
+
+static unsigned char *rgb_to_yuv(const unsigned char *rgb, size_t size)
+{
+	unsigned char r, g, b;
+	unsigned char *yuv = (unsigned char *)malloc(size);
+	if (!yuv) return NULL;
+
+	for (size_t i = 0; i < size; i += 3) {
+		r = rgb[i];
+		g = rgb[i + 1];
+		b = rgb[i + 2];
+
+		yuv[i] = yuv_clamp(0.299 * r + 0.587 * g + 0.114 * b);
+		yuv[i + 1] = yuv_clamp((0.436 * 255 - 0.14713 * r - 0.28886 * g + 0.436 * b) / 0.872);
+		yuv[i + 2] = yuv_clamp((0.615 * 255 + 0.615 * r - 0.51499 * g - 0.10001 * b) / 1.230);
+	}
+	return yuv;
+}
+
+YCbCr_ConverterToOgg::YCbCr_ConverterToOgg(int width, int height) :
+	quality(10),
 	frameRate(1), 
-	keyFrameInterval(32),
+	keyFrameInterval(64),
 	ogg_fp(NULL),
 	td(NULL), 
 	ogg_os(NULL), 
 	frameCount(0)
 {
-	auto el = YcbcrBuffer[0];
-	width = el->width;
-	height = el->height;
-	//el = nullptr;
+	this->width = width;
+	this->height = height;
 }
-
 
 YCbCr_ConverterToOgg::~YCbCr_ConverterToOgg()
 {
-
+	End();
 }
 
-
-
-void YCbCr_ConverterToOgg::Convert()
-{
-
-	for (auto it : arrayYcbcrBuffer)
-	{
-		th_ycbcr_buffer ycbcr = {it[0], it[1], it[2]};
-		EncodeFrame(ycbcr);
-	}
-
-}
-
-void YCbCr_ConverterToOgg::setKeyFrameInterval(int keyFrameInterval)
+void YCbCr_ConverterToOgg::SetKeyFrameInterval(int keyFrameInterval)
 {
 	this->keyFrameInterval = keyFrameInterval;
 }
 
-void YCbCr_ConverterToOgg::setFrameRate(int frameRate)
+void YCbCr_ConverterToOgg::SetFrameRate(int frameRate)
 {
 	this->frameCount = frameRate;
 }
 
-void YCbCr_ConverterToOgg::setQuality(int quality)
+void YCbCr_ConverterToOgg::SetQuality(int quality)
 {
 	this->quality = quality;
 }
 
-void YCbCr_ConverterToOgg::setOutputFile(std::string fileName)
+void YCbCr_ConverterToOgg::SetOutputFile(std::string fileName)
 {
 	this->outputFileName = fileName;
 }
 
-void YCbCr_ConverterToOgg::EncodeFrame(th_ycbcr_buffer ycbcr)
+void YCbCr_ConverterToOgg::NewFrame(const unsigned char *data)
 {
 	if (!frameCount)
 	{
@@ -73,14 +83,94 @@ void YCbCr_ConverterToOgg::EncodeFrame(th_ycbcr_buffer ycbcr)
 		InitTheora();
 		WriteHeaders();
 	}
-	WriteFrame(ycbcr);
+	WriteFrame(data);
 	frameCount++;
 }
 
-void YCbCr_ConverterToOgg::WriteFrame(th_ycbcr_buffer ycbcr, int dupCount)
+void YCbCr_ConverterToOgg::WriteFrame(const unsigned char *rgb, int dupCount)
 {
+	th_ycbcr_buffer ycbcr;
 	ogg_packet op;
 	ogg_page og;
+	unsigned char *yuv;
+
+	unsigned long yuv_w;
+	unsigned long yuv_h;
+
+	unsigned char *yuv_y;
+	unsigned char *yuv_u;
+	unsigned char *yuv_v;
+
+	unsigned int x;
+	unsigned int y;
+
+	yuv = rgb_to_yuv(rgb, width*height * 3);
+	if (!yuv)
+		throw "malloc failed in rgb_to_yuv";
+
+	yuv_w = (width + 15) & ~15;
+	yuv_h = (height + 15) & ~15;
+
+	ycbcr[0].width = yuv_w;
+	ycbcr[0].height = yuv_h;
+	ycbcr[0].stride = yuv_w;
+	ycbcr[1].width = (chroma_format == TH_PF_444) ? yuv_w : (yuv_w >> 1);
+	ycbcr[1].stride = ycbcr[1].width;
+	ycbcr[1].height = (chroma_format == TH_PF_420) ? (yuv_h >> 1) : yuv_h;
+	ycbcr[2].width = ycbcr[1].width;
+	ycbcr[2].stride = ycbcr[1].stride;
+	ycbcr[2].height = ycbcr[1].height;
+
+	yuv_y = (unsigned char*)malloc(ycbcr[0].stride * ycbcr[0].height);
+	if (!yuv_y)
+		throw "malloc failed in WriteFrame for yuv_y";
+
+	yuv_u = (unsigned char*)malloc(ycbcr[1].stride * ycbcr[1].height);
+	if (!yuv_u)
+		throw "malloc failed in WriteFrame for yuv_u";
+
+	yuv_v = (unsigned char*)malloc(ycbcr[2].stride * ycbcr[2].height);
+	if (!yuv_u)
+		throw "malloc failed in WriteFrame for yuv_v";
+
+	ycbcr[0].data = yuv_y;
+	ycbcr[1].data = yuv_u;
+	ycbcr[2].data = yuv_v;
+
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+			yuv_y[x + y * yuv_w] = yuv[3 * (x + y * width) + 0];
+		}
+	}
+
+	if (chroma_format == TH_PF_420) {
+		for (y = 0; y < height; y += 2) {
+			for (x = 0; x < width; x += 2) {
+				yuv_u[(x >> 1) + (y >> 1) * (yuv_w >> 1)] =
+					yuv[3 * (x + y * width) + 1];
+				yuv_v[(x >> 1) + (y >> 1) * (yuv_w >> 1)] =
+					yuv[3 * (x + y * width) + 2];
+			}
+		}
+	}
+	else if (chroma_format == TH_PF_444) {
+		for (y = 0; y < height; y++) {
+			for (x = 0; x < width; x++) {
+				yuv_u[x + y * ycbcr[1].stride] = yuv[3 * (x + y * width) + 1];
+				yuv_v[x + y * ycbcr[2].stride] = yuv[3 * (x + y * width) + 2];
+			}
+		}
+	}
+	else {  // TH_PF_422 
+		for (y = 0; y < height; y += 1) {
+			for (x = 0; x < width; x += 2) {
+				yuv_u[(x >> 1) + y * ycbcr[1].stride] =
+					yuv[3 * (x + y * width) + 1];
+				yuv_v[(x >> 1) + y * ycbcr[2].stride] =
+					yuv[3 * (x + y * width) + 2];
+			}
+		}
+	}
 
 	if (dupCount > 0) {
 		int ret = th_encode_ctl(td, TH_ENCCTL_SET_DUP_COUNT, &dupCount, sizeof(int));
@@ -91,24 +181,33 @@ void YCbCr_ConverterToOgg::WriteFrame(th_ycbcr_buffer ycbcr, int dupCount)
 	if (th_encode_ycbcr_in(td, ycbcr))
 		throw "th_encode_ycbcr_in failed in WriteFrame";
 
-	while (int ret = th_encode_packetout(td, 0, &op))
-	{
-		if (ret < 0)
-			throw "th_encode_packetout failed in WriteFrame";
-		ogg_stream_packetin(ogg_os, &op);
-		while (ogg_stream_pageout(ogg_os, &og))
-		{
-			fwrite(og.header, og.header_len, 1, ogg_fp);
-			fwrite(og.body, og.body_len, 1, ogg_fp);
-		}
+	int ret = th_encode_packetout(td, 0, &op);
+	if (ret < 0)
+		throw "th_encode_packetout failed in WriteFrame";
+	ogg_stream_packetin(ogg_os, &op);
+	while (ogg_stream_pageout(ogg_os, &og)) {
+		fwrite(og.header, og.header_len, 1, ogg_fp);
+		fwrite(og.body, og.body_len, 1, ogg_fp);
 	}
+	
 
-	//ogg_stream_flush(ogg_os, &og);
-	//fwrite(og.header, og.header_len, 1, ogg_fp);
-	//fwrite(og.body, og.body_len, 1, ogg_fp);
+
+	ogg_stream_flush(ogg_os, &og);
+	fwrite(og.header, og.header_len, 1, ogg_fp);
+	fwrite(og.body, og.body_len, 1, ogg_fp);
+
+	delete yuv_y;
+	yuv_y = NULL;
+	delete yuv_u;
+	yuv_u = NULL;
+	delete yuv_v;
+	yuv_u = NULL;
+	delete yuv;
+	yuv = NULL;
+
 }
 
-void YCbCr_ConverterToOgg::end()
+void YCbCr_ConverterToOgg::End()
 {
 	if (ogg_fp) fclose(ogg_fp);
 	if (td) th_encode_free(td);
@@ -164,13 +263,13 @@ void YCbCr_ConverterToOgg::InitTheora()
 	ti.pic_y = 0;
 
 	ti.fps_numerator = frameRate;
-	ti.fps_denominator = 0;
+	ti.fps_denominator = 1;
 	ti.aspect_numerator = 0;
 	ti.aspect_denominator = 0;
 	ti.colorspace = TH_CS_UNSPECIFIED;
 	ti.target_bitrate = 0;
-	ti.quality = 10;// quality;
-	ti.keyframe_granule_shift = 6;// (int)log2(keyFrameInterval);
+	ti.quality = quality;
+	ti.keyframe_granule_shift = (int)log2(keyFrameInterval);
 	ti.pixel_fmt = TH_PF_420;
 
 	td = th_encode_alloc(&ti);

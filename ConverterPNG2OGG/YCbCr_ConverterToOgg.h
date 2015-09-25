@@ -9,20 +9,19 @@
 class YCbCr_ConverterToOgg
 {
 public:
-	YCbCr_ConverterToOgg(std::vector<th_img_plane*> YcbcrBuffer, std::string outFile);
+	YCbCr_ConverterToOgg(int width, int height);
 	~YCbCr_ConverterToOgg();
 
-	void Convert();
-	void setKeyFrameInterval(int keyFrameInterval);
-	void setFrameRate(int frameRate);
-	void setQuality(int quality);
-	void setOutputFile(std::string fileName);
-	void end();
+	void SetKeyFrameInterval(int keyFrameInterval);
+	void SetFrameRate(int frameRate);
+	void SetQuality(int quality);
+	void SetOutputFile(std::string fileName);
+	void End();
+	void NewFrame(const unsigned char *data);
 private:
 	void InitTheora();
 	void WriteHeaders();
-	void EncodeFrame(th_ycbcr_buffer ycbcr);
-	void WriteFrame(th_ycbcr_buffer ycbcr, int dupCount = 0);
+	void WriteFrame(const unsigned char *rgb, int dupCount = 0);
 	int width, height, quality, frameRate, keyFrameInterval;
 	unsigned long frameCount;
 
