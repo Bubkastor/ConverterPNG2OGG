@@ -23,13 +23,6 @@ public:
 	std::vector<th_img_plane*> GetYcbcr();
 
 private:
-	std::vector<std::vector<RGB>> RGBAtoRGBArray(std::vector<unsigned char> input, unsigned int width)const;
-
-	void RGBToYUV(
-		std::vector<std::vector<RGB>> arrayRGB,
-		th_img_plane *ycbcr_ptr,
-		unsigned int w, unsigned int h);
-
 	std::vector<boost::filesystem::path> GetAllPathInFolder(std::string pathRead);
 	void ErrorFile(std::string path);
 	bool CheckExtension(boost::filesystem::path path);

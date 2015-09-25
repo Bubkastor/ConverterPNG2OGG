@@ -1,186 +1,189 @@
 #include "YCbCr_ConverterToOgg.h"
+#include <cmath>
 
-
-
-YCbCr_ConverterToOgg::YCbCr_ConverterToOgg(std::vector<th_img_plane*> YcbcrBuffer, std::string outFile) :
-	m_arrayYcbcrBuffer(YcbcrBuffer), m_outputFile(outFile)
+YCbCr_ConverterToOgg::YCbCr_ConverterToOgg(std::vector<th_img_plane*> YcbcrBuffer, std::string outputFileName) :
+	outputFileName(outputFileName), arrayYcbcrBuffer(YcbcrBuffer),
+	quality(1),
+	frameRate(1), 
+	keyFrameInterval(32),
+	ogg_fp(NULL),
+	td(NULL), 
+	ogg_os(NULL), 
+	frameCount(0)
 {
+	auto el = YcbcrBuffer[0];
+	width = el->width;
+	height = el->height;
+	//el = nullptr;
 }
-
-
 
 
 YCbCr_ConverterToOgg::~YCbCr_ConverterToOgg()
 {
 
-
 }
 
-void YCbCr_ConverterToOgg::SetOutputFile(std::string path)
-{
-	m_outputFile = path;
-}
+
 
 void YCbCr_ConverterToOgg::Convert()
 {
-	auto element = m_arrayYcbcrBuffer[0];
 
-	SetFrameParameter(element->width, element->height);
-
-	//std::ofstream ofs(m_outputFile, std::ofstream::binary);
-	FILE* outFil;
-
-	fopen_s(&ogg_fp, m_outputFile.c_str(), "w+");
-
-	for (size_t i = 0; i < m_arrayYcbcrBuffer.size(); i++)
+	for (auto it : arrayYcbcrBuffer)
 	{
-		th_img_plane* it = m_arrayYcbcrBuffer[i];
-
-		th_ycbcr_buffer ycbcr;
-		ycbcr[0] = it[0];
-		ycbcr[1] = it[1];
-		ycbcr[2] = it[2];
-		
-		
-		if (!EncodeFrame(ycbcr))
-			std::cout << "frame not encoder (((" << std::endl;
+		th_ycbcr_buffer ycbcr = {it[0], it[1], it[2]};
+		EncodeFrame(ycbcr);
 	}
-	//ofs.close();
-	fclose(ogg_fp);
+
 }
 
-bool YCbCr_ConverterToOgg::EncodeFrame(th_ycbcr_buffer ycbcr)
+void YCbCr_ConverterToOgg::setKeyFrameInterval(int keyFrameInterval)
 {
-	int ret;
-	if (m_encoder == NULL)
+	this->keyFrameInterval = keyFrameInterval;
+}
+
+void YCbCr_ConverterToOgg::setFrameRate(int frameRate)
+{
+	this->frameCount = frameRate;
+}
+
+void YCbCr_ConverterToOgg::setQuality(int quality)
+{
+	this->quality = quality;
+}
+
+void YCbCr_ConverterToOgg::setOutputFile(std::string fileName)
+{
+	this->outputFileName = fileName;
+}
+
+void YCbCr_ConverterToOgg::EncodeFrame(th_ycbcr_buffer ycbcr)
+{
+	if (!frameCount)
 	{
-		bool ret;
-		ret = InitEncode();
-		if (!ret)
+		if(outputFileName.empty())
+			throw "No output means was set. Use setOutputFile to set it.";
+		fopen_s(&ogg_fp, outputFileName.c_str(), "w+");
+		if (!ogg_fp)
 		{
-			std::cout << "initial encoder failed!" << std::endl;
-			return false;
+			std::string errorMsg;
+			std::cout << "Could not open " << outputFileName << " Error:" << errorMsg;
+			throw errorMsg;
 		}
+
+		InitTheora();
+		WriteHeaders();
 	}
+	WriteFrame(ycbcr);
+	frameCount++;
+}
 
-	ret = th_encode_ycbcr_in(m_encoder, ycbcr);
+void YCbCr_ConverterToOgg::WriteFrame(th_ycbcr_buffer ycbcr, int dupCount)
+{
+	ogg_packet op;
+	ogg_page og;
 
-	for (;;)
-	{
-		ret = th_encode_packetout(m_encoder, 0, &m_op);
-		if (!ret) break;
-		else    if (ret < 0)
-		{
-			std::cout << "failed to retrieve compressed frame!" << std::endl;
-			return false;
-		}
-		ogg_stream_packetin(&m_ogg_os, &m_op);
-	}
-
-	for (;;)
-	{
-		ret = ogg_stream_flush(&m_ogg_os, &m_og);
+	if (dupCount > 0) {
+		int ret = th_encode_ctl(td, TH_ENCCTL_SET_DUP_COUNT, &dupCount, sizeof(int));
 		if (ret)
+			throw "th_encode_ctl failed for dupCount>0";
+	}
+
+	if (th_encode_ycbcr_in(td, ycbcr))
+		throw "th_encode_ycbcr_in failed in WriteFrame";
+
+	while (int ret = th_encode_packetout(td, 0, &op))
+	{
+		if (ret < 0)
+			throw "th_encode_packetout failed in WriteFrame";
+		ogg_stream_packetin(ogg_os, &op);
+		while (ogg_stream_pageout(ogg_os, &og))
 		{
-			fwrite(m_og.header, 1, m_og.header_len, ogg_fp);
-			fwrite(m_og.body, 1, m_og.body_len, ogg_fp);
-
-			return true;
-
+			fwrite(og.header, og.header_len, 1, ogg_fp);
+			fwrite(og.body, og.body_len, 1, ogg_fp);
 		}
-		else if (!ret) return true;
 	}
+
+	//ogg_stream_flush(ogg_os, &og);
+	//fwrite(og.header, og.header_len, 1, ogg_fp);
+	//fwrite(og.body, og.body_len, 1, ogg_fp);
 }
-void YCbCr_ConverterToOgg::SetFrameParameter(int width, int height)
-{
-	m_pic_w = width;
-	m_pic_h = height;
-	m_frame_w = m_pic_w + 15 & ~0xF;
-	m_frame_h = m_pic_h + 15 & ~0xF;
 
-	m_pic_x = m_frame_w - m_pic_w >> 1 & ~1;
-	m_pic_y = m_frame_h - m_pic_h >> 1 & ~1;
+void YCbCr_ConverterToOgg::end()
+{
+	if (ogg_fp) fclose(ogg_fp);
+	if (td) th_encode_free(td);
+	if (ogg_os) ogg_stream_clear(ogg_os);
+	ogg_fp = NULL;
+	td = NULL;
+	ogg_os = NULL;
 }
-bool YCbCr_ConverterToOgg::InitEncode(std::ofstream& ofs)
+
+void YCbCr_ConverterToOgg::WriteHeaders()
 {
-	int ret;
-	th_info_init(&m_ti);
+	th_comment_init(&tc);
+	if (th_encode_flushheader(td, &tc, &op) <= 0)
+		throw "th_encode_flushheader failed in WriteHeaders";
+	th_comment_clear(&tc);
 
-	m_ti.frame_width = m_frame_w;
-	m_ti.frame_height = m_frame_h;
-	m_ti.pic_width = m_pic_w;
-	m_ti.pic_height = m_pic_h;
-	m_ti.pic_x = m_pic_x;
-	m_ti.pic_y = m_pic_y;
-	m_ti.fps_numerator = video_fps_numerator;
-	m_ti.fps_denominator = video_fps_denominator;
-	m_ti.aspect_numerator = video_aspect_numerator;
-	m_ti.aspect_denominator = video_aspect_denominator;
-	m_ti.colorspace = TH_CS_UNSPECIFIED;
-	m_ti.target_bitrate = video_rate;
-	m_ti.quality = video_quality;
-	m_ti.keyframe_granule_shift = 6;
-	m_ti.pixel_fmt = TH_PF_444;
+	ogg_stream_packetin(ogg_os, &op);
+	if (ogg_stream_pageout(ogg_os, &og) != 1)
+		throw "ogg_stream_pageout failed in WriteHeaders";
 
-	m_encoder = th_encode_alloc(&m_ti);
+	fwrite(og.header, 1, og.header_len, ogg_fp);
+	fwrite(og.body, 1, og.body_len, ogg_fp);
 
-	if (m_encoder == NULL)
-	{
-		std::cout << "negative return code initializing encoder!" << std::endl;
-		th_info_clear(&m_ti);
-		return false;
-	}
-	if (ogg_stream_init(&m_ogg_os, rand()) < 0)
-	{
-		std::cout << "ogg stream not created" << std::endl;
-		return false;
-	}
-
-	th_comment_init(&m_tc);
-
-	if (th_encode_flushheader(m_encoder, &m_tc, &m_op) <= 0)
-	{
-		std::cout << "Internal Theora Library Error!" << std::endl;
-		return false;
-	}
-	ogg_stream_packetin(&m_ogg_os, &m_op);
-	if (ogg_stream_pageout(&m_ogg_os, &m_og) != 1)
-	{
-		std::cout << "Internal Ogg library Error!" << std::endl;
-		return false;
-	}
-	// todo https://github.com/pkrumins/node-video/blob/master/src/video_encoder.cpp
-
-		
 	for (;;)
 	{
-		ret = th_encode_flushheader(m_encoder, &m_tc, &m_op);
-		if (ret < 0)
-		{
-			std::cout << "Internal Theora library error." << std::endl;
-			if (m_encoder != NULL)
-			{
-				th_encode_free(m_encoder);
-				m_encoder = NULL;
-			}
-			th_comment_clear(&m_tc);
-			th_info_clear(&m_ti);
-			return false;
-		}
-		else if (!ret)break;
-		ogg_stream_packetin(&m_ogg_os, &m_op);
+		int ret = th_encode_flushheader(td, &tc, &op);
+		if (ret < 0 )
+			throw "th_encode_flushheader failed in WriteHeaders";
+		else if (ret == 0)
+			break;
+		ogg_stream_packetin(ogg_os, &op);
 	}
-	for (;;) {
-		int result = ogg_stream_flush(&m_ogg_os, &m_og);
-		if (result < 0) {
-			std::cout << "Internal Ogg library error." << std::endl;
-			return false;
-		}
-		if (result == 0)break;
 
-		fwrite(m_og.header, m_og.header_len, 1, ogg_fp);
-		fwrite(m_og.body, og.body_len, 1, ogg_fp);
+	for (;;) {
+		int ret = ogg_stream_flush(ogg_os, &og);
+		if (ret < 0)
+			throw "ogg_stream_flush failed in WriteHeaders";
+		else if (ret == 0)
+			break;
+		fwrite(og.header, 1, og.header_len, ogg_fp);
+		fwrite(og.body, 1, og.body_len, ogg_fp);
 	}
-	return true;
+}
+void YCbCr_ConverterToOgg::InitTheora()
+{
+	th_info_init(&ti);
+
+	ti.frame_width = ((width + 15) >> 4) << 4;
+	ti.frame_height = ((height + 15) >> 4) << 4;
+	ti.pic_width = width;
+	ti.pic_height = height;
+	ti.pic_x = 0;
+	ti.pic_y = 0;
+
+	ti.fps_numerator = frameRate;
+	ti.fps_denominator = 0;
+	ti.aspect_numerator = 0;
+	ti.aspect_denominator = 0;
+	ti.colorspace = TH_CS_UNSPECIFIED;
+	ti.target_bitrate = 0;
+	ti.quality = 10;// quality;
+	ti.keyframe_granule_shift = 6;// (int)log2(keyFrameInterval);
+	ti.pixel_fmt = TH_PF_420;
+
+	td = th_encode_alloc(&ti);
+
+	th_info_clear(&ti);
+
+	int comp = 1;
+	th_encode_ctl(td, TH_ENCCTL_SET_VP3_COMPATIBLE, &comp, sizeof(comp));
+
+	ogg_os = (ogg_stream_state*)malloc(sizeof(ogg_stream_state));
+	if (!ogg_os)
+		throw "malloc failed in InitTheora for ogg_stream_state";
+	if (ogg_stream_init(ogg_os,rand()))
+		throw "ogg_stream_init failed in InitTheora";
 
 }

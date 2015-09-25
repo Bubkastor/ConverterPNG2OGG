@@ -11,38 +11,31 @@ class YCbCr_ConverterToOgg
 public:
 	YCbCr_ConverterToOgg(std::vector<th_img_plane*> YcbcrBuffer, std::string outFile);
 	~YCbCr_ConverterToOgg();
-	void SetOutputFile(std::string path);
-	void Convert();
-	bool EncodeFrame(th_ycbcr_buffer buffer, std::ofstream& ofs);
-	void SetFrameParameter(int width, int height);
-private:
-	bool InitEncode(std::ofstream& ofs);
 
+	void Convert();
+	void setKeyFrameInterval(int keyFrameInterval);
+	void setFrameRate(int frameRate);
+	void setQuality(int quality);
+	void setOutputFile(std::string fileName);
+	void end();
+private:
+	void InitTheora();
+	void WriteHeaders();
+	void EncodeFrame(th_ycbcr_buffer ycbcr);
+	void WriteFrame(th_ycbcr_buffer ycbcr, int dupCount = 0);
+	int width, height, quality, frameRate, keyFrameInterval;
+	unsigned long frameCount;
 
 	FILE *ogg_fp;
-	std::string m_outputFile;
-	th_enc_ctx *m_encoder;
-	th_info m_ti;
-	int m_frame_w;
-	int m_frame_h;
-	int m_pic_w;
-	int m_pic_h;
-	int m_pic_x;
-	int m_pic_y;
-	ogg_uint32_t video_fps_numerator = 1;
-	ogg_uint32_t video_fps_denominator = 1;
-	ogg_uint32_t video_aspect_numerator = 0;
-	ogg_uint32_t video_aspect_denominator = 0;
-	int video_rate = 1;
-	int video_quality = 0;
-	int keyframe_frequency = 0;
+	th_info ti;
+	th_enc_ctx *td;
+	th_comment tc;
+	ogg_packet op;
+	ogg_page og;
+	ogg_stream_state *ogg_os;
+	std::string outputFileName;
+	
 
-	th_comment m_tc;
-
-	ogg_packet m_op;
-	ogg_page m_og;
-	ogg_stream_state m_ogg_os;
-
-	std::vector<th_img_plane*> m_arrayYcbcrBuffer;
+	std::vector<th_img_plane*> arrayYcbcrBuffer;
 };
 

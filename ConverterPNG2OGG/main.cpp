@@ -18,5 +18,6 @@ void main(int argc, char *argv[])
 
 		YCbCr_ConverterToOgg convOgg = YCbCr_ConverterToOgg(yCbCr, ouFolder);
 		convOgg.Convert();
+		convOgg.end();
 	}
 }
