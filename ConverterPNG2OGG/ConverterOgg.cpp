@@ -14,7 +14,7 @@ static inline unsigned char yuv_clamp(double d)
 		
 unsigned char* ConverterOgg::rgb_to_yuv(const unsigned char *rgb, size_t size)
 {
-	unsigned char r, g, b;
+	unsigned char r, g, b, a;
 	unsigned char *yuv = (unsigned char *)malloc(size);
 	if (!yuv) return NULL;
 
@@ -22,7 +22,7 @@ unsigned char* ConverterOgg::rgb_to_yuv(const unsigned char *rgb, size_t size)
 		r = rgb[i];
 		g = rgb[i + 1];
 		b = rgb[i + 2];
-
+		a = rgb[i + 3];
 		
 		if (onlyAlphaChannel)
 		{
