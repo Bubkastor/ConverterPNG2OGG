@@ -19,6 +19,7 @@ private:
 	void ErrorFile(std::string path);
 	bool CheckExtension(boost::filesystem::path path);
 	unsigned char* RGBA_To_RGB(std::vector<unsigned char> rgba);
+	void LogPercentConverter(int i, int size);
 	
 	YCbCr_ConverterToOgg converter;
 	std::string outputFile;

@@ -44,6 +44,8 @@ ConvertPngToOgg::~ConvertPngToOgg()
 void ConvertPngToOgg::Run()
 {
 	InitYCbCr_conver();
+	int percent = 0;;
+	size_t size = pngArray.size();
 	for (auto element : pngArray)
 	{
 		lodepng::load_file(png, element.string());
@@ -52,6 +54,8 @@ void ConvertPngToOgg::Run()
 
 		unsigned char* rgb = RGBA_To_RGB(image);
 		converter.NewFrame(rgb);
+		percent++;
+		LogPercentConverter(percent, size);
 		image.clear();
 		png.clear();
 		delete[] rgb;
@@ -59,6 +63,19 @@ void ConvertPngToOgg::Run()
 	}
 
 	converter.End();
+}
+
+void ConvertPngToOgg::LogPercentConverter(int i, int size)
+{
+	std::cout.precision(2);
+	
+	if (i != size)
+	{
+		std::cout << "Precent converting: " << ((float)i / (float)size) * 100 << std::endl;
+	}
+	else
+		std::cout << "Precent converting : 100" << std::endl;
+	
 }
 
 void ConvertPngToOgg::InitYCbCr_conver()
