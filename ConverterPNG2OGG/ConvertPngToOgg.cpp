@@ -18,8 +18,8 @@ std::vector<boost::filesystem::path> ConvertPngToOgg::GetAllPathInFolder(std::st
 	{
 		for (auto x : directory_iterator(pathRead))
 			CheckExtension(x.path()) ?
-			result.push_back(x.path()) :
-			ErrorFile(x.path().string());
+				result.push_back(x.path()) :
+				ErrorFile(x.path().string());
 	}
 	return result;
 }

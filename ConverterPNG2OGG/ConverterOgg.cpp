@@ -37,7 +37,6 @@ unsigned char* ConverterOgg::rgb_to_yuv(const unsigned char *rgb, size_t size)
 			yuv[i + 2] = yuv_clamp((0.615 * 255 + 0.615 * r - 0.51499 * g - 0.10001 * b) / 1.230);
 		}
 		
-
 	}
 	return yuv;
 }
