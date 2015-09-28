@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <boost\filesystem.hpp>
-#include "YCbCr_ConverterToOgg.h"
+#include "ConverterOgg.h"
 
 #include <iostream>
 #include <lodepng.h>
@@ -22,7 +22,7 @@ private:
 	void LogPercentConverter(int i, int size);
 	
 	bool onlyAlpha;
-	YCbCr_ConverterToOgg converter;
+	ConverterOgg converter;
 	std::string outputFile;
 	std::vector<boost::filesystem::path> pngArray;
 	std::vector<unsigned char> png;

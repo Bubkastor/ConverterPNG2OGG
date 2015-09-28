@@ -70,7 +70,7 @@ void ConvertPngToOgg::InitYCbCr_conver()
 {
 	lodepng::load_file(png, pngArray[0].string());
 	unsigned error = lodepng::decode(image, width, height, png);
-	converter = YCbCr_ConverterToOgg(width, height);
+	converter = ConverterOgg(width, height);
 	converter.SetOutputFile(outputFile);
 	converter.SetBlackWhiteImage(onlyAlpha);
 	png.clear();

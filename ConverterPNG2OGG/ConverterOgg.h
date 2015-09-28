@@ -7,11 +7,11 @@
 #include <ogg/ogg.h>
 #include <cmath>
 
-class YCbCr_ConverterToOgg
+class ConverterOgg
 {
 public:
-	YCbCr_ConverterToOgg(int width, int height);
-	~YCbCr_ConverterToOgg();
+	ConverterOgg(int width, int height);
+	~ConverterOgg();
 
 	void SetKeyFrameInterval(int keyFrameInterval);
 	void SetFrameRate(int frameRate);

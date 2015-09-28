@@ -24,11 +24,11 @@
   <ItemGroup>
     <ClCompile Include="ConvertPngToOgg.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="YCbCr_ConverterToOgg.cpp" />
+    <ClCompile Include="ConverterOgg.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ConvertPngToOgg.h" />
-    <ClInclude Include="YCbCr_ConverterToOgg.h" />
+    <ClInclude Include="ConverterOgg.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5F8620D8-EB4E-49A3-BB69-E33D8626597A}</ProjectGuid>

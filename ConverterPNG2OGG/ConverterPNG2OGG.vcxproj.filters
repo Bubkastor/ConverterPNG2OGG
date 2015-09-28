@@ -45,10 +45,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\lodepng.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="YCbCr_ConverterToOgg.cpp">
+    <ClCompile Include="ConvertPngToOgg.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="ConvertPngToOgg.cpp">
+    <ClCompile Include="ConverterOgg.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,10 +56,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="YCbCr_ConverterToOgg.h">
+    <ClInclude Include="ConvertPngToOgg.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="ConvertPngToOgg.h">
+    <ClInclude Include="ConverterOgg.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>

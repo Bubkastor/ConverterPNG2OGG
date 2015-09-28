@@ -1,4 +1,4 @@
-#include "YCbCr_ConverterToOgg.h"
+#include "ConverterOgg.h"
 
 
 #define FPS 24
@@ -9,10 +9,10 @@ static inline unsigned char yuv_clamp(double d)
 {
 	if (d < 0) return 0;
 	if (d > 255) return 255;
-	return d;
+	return (unsigned char)d;
 }
 		
-unsigned char* YCbCr_ConverterToOgg::rgb_to_yuv(const unsigned char *rgb, size_t size)
+unsigned char* ConverterOgg::rgb_to_yuv(const unsigned char *rgb, size_t size)
 {
 	unsigned char r, g, b;
 	unsigned char *yuv = (unsigned char *)malloc(size);
@@ -42,7 +42,7 @@ unsigned char* YCbCr_ConverterToOgg::rgb_to_yuv(const unsigned char *rgb, size_t
 	return yuv;
 }
 
-YCbCr_ConverterToOgg::YCbCr_ConverterToOgg(int width, int height) :
+ConverterOgg::ConverterOgg(int width, int height) :
 	quality(61),
 	frameRate(FPS),
 	keyFrameInterval(64),
@@ -56,37 +56,37 @@ YCbCr_ConverterToOgg::YCbCr_ConverterToOgg(int width, int height) :
 	this->height = height;
 }
 
-YCbCr_ConverterToOgg::~YCbCr_ConverterToOgg()
+ConverterOgg::~ConverterOgg()
 {
 	End();
 }
 
-void YCbCr_ConverterToOgg::SetKeyFrameInterval(int keyFrameInterval)
+void ConverterOgg::SetKeyFrameInterval(int keyFrameInterval)
 {
 	this->keyFrameInterval = keyFrameInterval;
 }
 
-void YCbCr_ConverterToOgg::SetFrameRate(int frameRate)
+void ConverterOgg::SetFrameRate(int frameRate)
 {
 	this->frameCount = frameRate;
 }
 
-void YCbCr_ConverterToOgg::SetQuality(int quality)
+void ConverterOgg::SetQuality(int quality)
 {
 	this->quality = quality;
 }
 
-void YCbCr_ConverterToOgg::SetOutputFile(std::string fileName)
+void ConverterOgg::SetOutputFile(std::string fileName)
 {
 	this->outputFileName = fileName;
 }
 
-void YCbCr_ConverterToOgg::SetBlackWhiteImage(bool onlyAlbph)
+void ConverterOgg::SetBlackWhiteImage(bool onlyAlbph)
 {
 	this->onlyAlphaChannel = onlyAlbph;
 }
 
-void YCbCr_ConverterToOgg::NewFrame(const unsigned char *data)
+void ConverterOgg::NewFrame(const unsigned char *data)
 {
 	if (!frameCount)
 	{
@@ -107,7 +107,7 @@ void YCbCr_ConverterToOgg::NewFrame(const unsigned char *data)
 	frameCount++;
 }
 
-void YCbCr_ConverterToOgg::WriteFrame(const unsigned char *rgb, int dupCount)
+void ConverterOgg::WriteFrame(const unsigned char *rgb, int dupCount)
 {
 	th_ycbcr_buffer ycbcr;
 	ogg_packet op;
@@ -121,8 +121,8 @@ void YCbCr_ConverterToOgg::WriteFrame(const unsigned char *rgb, int dupCount)
 	unsigned char *yuv_u;
 	unsigned char *yuv_v;
 
-	unsigned int x;
-	unsigned int y;
+	int x;
+	int y;
 
 	yuv = rgb_to_yuv(rgb, width*height * 3);
 	if (!yuv)
@@ -227,7 +227,7 @@ void YCbCr_ConverterToOgg::WriteFrame(const unsigned char *rgb, int dupCount)
 
 }
 
-void YCbCr_ConverterToOgg::End()
+void ConverterOgg::End()
 {
 	if (ogg_fp) fclose(ogg_fp);
 	if (td) th_encode_free(td);
@@ -237,7 +237,7 @@ void YCbCr_ConverterToOgg::End()
 	ogg_os = NULL;
 }
 
-void YCbCr_ConverterToOgg::WriteHeaders()
+void ConverterOgg::WriteHeaders()
 {
 	th_comment_init(&tc);
 	if (th_encode_flushheader(td, &tc, &op) <= 0)
@@ -271,7 +271,7 @@ void YCbCr_ConverterToOgg::WriteHeaders()
 		fwrite(og.body, 1, og.body_len, ogg_fp);
 	}
 }
-void YCbCr_ConverterToOgg::InitTheora()
+void ConverterOgg::InitTheora()
 {
 	th_info_init(&ti);
 
