@@ -1,6 +1,5 @@
-#include "PNG_ConverterToYCbCr.h"
 #include "YCbCr_ConverterToOgg.h"
-
+#include <boost\filesystem.hpp>
 #include <lodepng.h>
 boost::filesystem::path PNG_EXTENSION = ".png";
 
@@ -37,6 +36,7 @@ unsigned char* RGBA_To_RGB(std::vector<unsigned char> rgba) {
 		tempRgb.push_back(rgba[i + 1]);
 		tempRgb.push_back(rgba[i + 2]);
 	}
+	
 	unsigned char* rgb = new unsigned char[tempRgb.size()];
 	for (size_t i = 0; i < tempRgb.size(); i++)
 		rgb[i] = tempRgb[i];

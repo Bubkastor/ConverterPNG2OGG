@@ -1,6 +1,8 @@
 #include "YCbCr_ConverterToOgg.h"
 #include <cmath>
 
+#define FPS 25
+
 static int chroma_format = TH_PF_420;
 
 static inline unsigned char yuv_clamp(double d)
@@ -29,8 +31,8 @@ static unsigned char *rgb_to_yuv(const unsigned char *rgb, size_t size)
 }
 
 YCbCr_ConverterToOgg::YCbCr_ConverterToOgg(int width, int height) :
-	quality(10),
-	frameRate(1), 
+	quality(61),
+	frameRate(FPS),
 	keyFrameInterval(64),
 	ogg_fp(NULL),
 	td(NULL), 
@@ -72,7 +74,7 @@ void YCbCr_ConverterToOgg::NewFrame(const unsigned char *data)
 	{
 		if(outputFileName.empty())
 			throw "No output means was set. Use setOutputFile to set it.";
-		fopen_s(&ogg_fp, outputFileName.c_str(), "w+");
+		fopen_s(&ogg_fp, outputFileName.c_str(), "wb+");
 		if (!ogg_fp)
 		{
 			std::string errorMsg;

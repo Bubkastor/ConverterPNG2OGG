@@ -18,6 +18,7 @@ public:
 	void SetOutputFile(std::string fileName);
 	void End();
 	void NewFrame(const unsigned char *data);
+
 private:
 	void InitTheora();
 	void WriteHeaders();
