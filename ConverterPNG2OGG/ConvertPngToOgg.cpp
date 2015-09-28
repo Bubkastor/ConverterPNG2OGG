@@ -2,8 +2,8 @@
 
 boost::filesystem::path PNG_EXTENSION = ".png";
 
-ConvertPngToOgg::ConvertPngToOgg(std::string folderPng, std::string outputFile) :
-	outputFile(outputFile), converter(0, 0)
+ConvertPngToOgg::ConvertPngToOgg(std::string folderPng, std::string outputFile, bool onlyAlpha) :
+	outputFile(outputFile), converter(0, 0), onlyAlpha(onlyAlpha)
 {
 	pngArray = GetAllPathInFolder(folderPng);
 }
@@ -65,6 +65,18 @@ void ConvertPngToOgg::Run()
 	converter.End();
 }
 
+
+void ConvertPngToOgg::InitYCbCr_conver()
+{
+	lodepng::load_file(png, pngArray[0].string());
+	unsigned error = lodepng::decode(image, width, height, png);
+	converter = YCbCr_ConverterToOgg(width, height);
+	converter.SetOutputFile(outputFile);
+	converter.SetBlackWhiteImage(onlyAlpha);
+	png.clear();
+	image.clear();
+}
+
 void ConvertPngToOgg::LogPercentConverter(int i, int size)
 {
 	std::cout.precision(2);
@@ -76,16 +88,6 @@ void ConvertPngToOgg::LogPercentConverter(int i, int size)
 	else
 		std::cout << "Precent converting : 100" << std::endl;
 	
-}
-
-void ConvertPngToOgg::InitYCbCr_conver()
-{
-	lodepng::load_file(png, pngArray[0].string());
-	unsigned error = lodepng::decode(image, width, height, png);
-	converter = YCbCr_ConverterToOgg(width, height);
-	converter.SetOutputFile(outputFile);
-	png.clear();
-	image.clear();
 }
 
 unsigned char* ConvertPngToOgg::RGBA_To_RGB(std::vector<unsigned char> rgba)

@@ -10,7 +10,7 @@
 class ConvertPngToOgg
 {
 public:
-	ConvertPngToOgg(std::string folderPng, std::string outputFile);
+	ConvertPngToOgg(std::string folderPng, std::string outputFile, bool onlyAlpha);
 	~ConvertPngToOgg();
 	void Run();
 private:
@@ -21,6 +21,7 @@ private:
 	unsigned char* RGBA_To_RGB(std::vector<unsigned char> rgba);
 	void LogPercentConverter(int i, int size);
 	
+	bool onlyAlpha;
 	YCbCr_ConverterToOgg converter;
 	std::string outputFile;
 	std::vector<boost::filesystem::path> pngArray;
@@ -28,5 +29,6 @@ private:
 	std::vector<unsigned char> image;
 	unsigned int width;
 	unsigned int height;
+	
 };
 

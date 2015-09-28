@@ -1,7 +1,7 @@
 #include "YCbCr_ConverterToOgg.h"
 
 
-#define FPS 25
+#define FPS 24
 
 static int chroma_format = TH_PF_420;
 
@@ -11,8 +11,8 @@ static inline unsigned char yuv_clamp(double d)
 	if (d > 255) return 255;
 	return d;
 }
-
-static unsigned char *rgb_to_yuv(const unsigned char *rgb, size_t size)
+		
+unsigned char* YCbCr_ConverterToOgg::rgb_to_yuv(const unsigned char *rgb, size_t size)
 {
 	unsigned char r, g, b;
 	unsigned char *yuv = (unsigned char *)malloc(size);
@@ -23,9 +23,21 @@ static unsigned char *rgb_to_yuv(const unsigned char *rgb, size_t size)
 		g = rgb[i + 1];
 		b = rgb[i + 2];
 
-		yuv[i] = yuv_clamp(0.299 * r + 0.587 * g + 0.114 * b);
-		yuv[i + 1] = yuv_clamp((0.436 * 255 - 0.14713 * r - 0.28886 * g + 0.436 * b) / 0.872);
-		yuv[i + 2] = yuv_clamp((0.615 * 255 + 0.615 * r - 0.51499 * g - 0.10001 * b) / 1.230);
+		
+		if (onlyAlphaChannel)
+		{
+			yuv[i] = yuv_clamp(0.299 * r + 0.587 * g + 0.114 * b);
+			yuv[i + 1] = 128;
+			yuv[i + 2] = 128;
+		}
+		else
+		{
+			yuv[i] = yuv_clamp(0.299 * r + 0.587 * g + 0.114 * b);
+			yuv[i + 1] = yuv_clamp((0.436 * 255 - 0.14713 * r - 0.28886 * g + 0.436 * b) / 0.872);
+			yuv[i + 2] = yuv_clamp((0.615 * 255 + 0.615 * r - 0.51499 * g - 0.10001 * b) / 1.230);
+		}
+		
+
 	}
 	return yuv;
 }
@@ -35,9 +47,10 @@ YCbCr_ConverterToOgg::YCbCr_ConverterToOgg(int width, int height) :
 	frameRate(FPS),
 	keyFrameInterval(64),
 	ogg_fp(NULL),
-	td(NULL), 
-	ogg_os(NULL), 
-	frameCount(0)
+	td(NULL),
+	ogg_os(NULL),
+	frameCount(0),
+	onlyAlphaChannel(false)
 {
 	this->width = width;
 	this->height = height;
@@ -66,6 +79,11 @@ void YCbCr_ConverterToOgg::SetQuality(int quality)
 void YCbCr_ConverterToOgg::SetOutputFile(std::string fileName)
 {
 	this->outputFileName = fileName;
+}
+
+void YCbCr_ConverterToOgg::SetBlackWhiteImage(bool onlyAlbph)
+{
+	this->onlyAlphaChannel = onlyAlbph;
 }
 
 void YCbCr_ConverterToOgg::NewFrame(const unsigned char *data)
