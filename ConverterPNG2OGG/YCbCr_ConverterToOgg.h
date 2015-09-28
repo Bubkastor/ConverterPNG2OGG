@@ -5,6 +5,7 @@
 #include <string>
 #include <theora/theoraenc.h>
 #include <ogg/ogg.h>
+#include <cmath>
 
 class YCbCr_ConverterToOgg
 {

@@ -13,12 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Файлы исходного кода\Temp">
-      <UniqueIdentifier>{e73641ed-2f82-4a07-a983-db66e3b56789}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Заголовочные файлы\Temp">
-      <UniqueIdentifier>{e2bbbbc6-8b99-49bb-b55e-ade4f36a0f56}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -54,12 +48,18 @@
     <ClCompile Include="YCbCr_ConverterToOgg.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
+    <ClCompile Include="ConvertPngToOgg.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="YCbCr_ConverterToOgg.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="ConvertPngToOgg.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>

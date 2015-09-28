@@ -1,5 +1,5 @@
 #include "YCbCr_ConverterToOgg.h"
-#include <cmath>
+
 
 #define FPS 25
 

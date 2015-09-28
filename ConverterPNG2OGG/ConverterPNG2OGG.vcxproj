@@ -22,10 +22,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ConvertPngToOgg.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="YCbCr_ConverterToOgg.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConvertPngToOgg.h" />
     <ClInclude Include="YCbCr_ConverterToOgg.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
