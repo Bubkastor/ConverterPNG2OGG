@@ -22,7 +22,7 @@ unsigned char* ConverterOgg::rgb_to_yuv(const unsigned char *rgb, size_t size)
 		r = rgb[i];
 		g = rgb[i + 1];
 		b = rgb[i + 2];
-		a = rgb[i + 3];
+		//a = rgb[i + 3];
 		
 		if (onlyAlphaChannel)
 		{
@@ -270,6 +270,7 @@ void ConverterOgg::WriteHeaders()
 		fwrite(og.body, 1, og.body_len, ogg_fp);
 	}
 }
+
 void ConverterOgg::InitTheora()
 {
 	th_info_init(&ti);

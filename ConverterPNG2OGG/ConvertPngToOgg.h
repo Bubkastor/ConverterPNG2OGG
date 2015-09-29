@@ -20,6 +20,7 @@ private:
 	bool CheckExtension(boost::filesystem::path path);
 	unsigned char* RGBA_To_RGB(std::vector<unsigned char> rgba);
 	void LogPercentConverter(int i, int size);
+	unsigned char* ResizePng(unsigned char* rgb);
 	
 	bool onlyAlpha;
 	ConverterOgg converter;
@@ -29,6 +30,7 @@ private:
 	std::vector<unsigned char> image;
 	unsigned int width;
 	unsigned int height;
-	
+	int resize;
+
 };
 
