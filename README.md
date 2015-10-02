@@ -4,4 +4,4 @@ commond line interface
 first parametr : Path folder where are the pictures
 second parametr: Path where write Ogg file
 
-#C:/temp/png c:/temp/ogg/film.ogg
+#C:/temp/png C:/temp/ogg/film.ogg
