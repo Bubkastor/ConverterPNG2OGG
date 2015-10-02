@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <boost\filesystem.hpp>
+#include <numeric>
+#include <math.h>
 #include "ConverterOgg.h"
 
 #include <iostream>

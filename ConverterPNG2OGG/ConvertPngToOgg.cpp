@@ -4,9 +4,27 @@ boost::filesystem::path PNG_EXTENSION = ".png";
 
 struct RGB
 {
-	unsigned char R;
-	unsigned char G;
-	unsigned char B;
+	int R;
+	int G;
+	int B;
+
+	RGB& operator+(const RGB right)
+	{
+		RGB result;
+		result.R = this->R + right.R;
+		result.G = this->G + right.G;
+		result.B = this->B + right.B;
+		return result;
+	};
+
+	RGB& operator/(const int right)
+	{
+		RGB result;
+		result.R = this->R / right;
+		result.G = this->G / right;
+		result.B = this->B / right;
+		return result;
+	};
 
 };
 
@@ -62,24 +80,27 @@ void ConvertPngToOgg::Run()
 		if (error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 
 		unsigned char* rgb = RGBA_To_RGB(image);
-		unsigned char* newSize = ResizePng(rgb);
+		//unsigned char* newSize = ResizePng(rgb);
 
-		converter.NewFrame(newSize);
+		converter.NewFrame(rgb);
 		percent++;
 		LogPercentConverter(percent, size);
 		image.clear();
 		png.clear();
-		delete[] newSize;
+		//delete[] newSize;
 		delete[] rgb;
-		newSize = NULL;
+		//newSize = NULL;
 		rgb = NULL;
 	}
 
 	converter.End();
 }
 
-std::vector<std::vector<RGB>> SSAA(std::vector<std::vector<RGB>> RgbArray, int resize)
+
+
+std::vector<std::vector<RGB>> SSAA2(std::vector<std::vector<RGB>> RgbArray)
 {
+	int resize = 2;
 	std::vector<std::vector<RGB>> resizeArrayRgb;
 	int width = RgbArray[0].size();
 	int height = RgbArray.size();
@@ -90,14 +111,9 @@ std::vector<std::vector<RGB>> SSAA(std::vector<std::vector<RGB>> RgbArray, int r
 		for (size_t j = 0; j < RgbArray[0].size(); j += resize)
 		{
 			RGB tRgb;
-			RGB tRgb1;
 			if ((j + 1 < width) && (i + 1 < height))
 			{
-
-				tRgb.R = (RgbArray[i][j].R + RgbArray[i + 1][j].R + RgbArray[i + 1][j + 1].R + RgbArray[i][j + 1].R) / (resize * resize);
-				tRgb.G = (RgbArray[i][j].G + RgbArray[i + 1][j].G + RgbArray[i + 1][j + 1].G + RgbArray[i][j + 1].G) / (resize * resize);
-				tRgb.B = (RgbArray[i][j].B + RgbArray[i + 1][j].B + RgbArray[i + 1][j + 1].B + RgbArray[i][j + 1].B) / (resize * resize);
-				
+				tRgb = (RgbArray[i][j] + RgbArray[i + 1][j] + RgbArray[i + 1][j + 1] + RgbArray[i][j + 1]) / (resize * resize);			
 			}
 			else
 			{
@@ -109,16 +125,11 @@ std::vector<std::vector<RGB>> SSAA(std::vector<std::vector<RGB>> RgbArray, int r
 				{
 					if (i + 1 > height)
 					{
-						tRgb.R = (RgbArray[i][j].R + RgbArray[i][j + 1].R) / (resize * resize);
-						tRgb.G = (RgbArray[i][j].G + RgbArray[i][j + 1].G) / (resize * resize);
-						tRgb.B = (RgbArray[i][j].B + RgbArray[i][j + 1].B) / (resize * resize);
+						tRgb = (RgbArray[i][j] + RgbArray[i][j + 1]) / (resize * resize);
 					}
 					if (j + 1 > width)
 					{
-						tRgb.R = (RgbArray[i][j].R + RgbArray[i + 1][j].R) / (resize * resize);
-						tRgb.G = (RgbArray[i][j].G + RgbArray[i + 1][j].G) / (resize * resize);
-						tRgb.B = (RgbArray[i][j].B + RgbArray[i + 1][j].B) / (resize * resize);
-
+						tRgb = (RgbArray[i][j] + RgbArray[i + 1][j]) / (resize * resize);
 					}
 				}
 			}
@@ -130,6 +141,8 @@ std::vector<std::vector<RGB>> SSAA(std::vector<std::vector<RGB>> RgbArray, int r
 	}
 	return resizeArrayRgb;
 }
+
+
 
 unsigned char* ConvertPngToOgg::ResizePng(unsigned char* rgb)
 {
@@ -153,7 +166,7 @@ unsigned char* ConvertPngToOgg::ResizePng(unsigned char* rgb)
 		}
 	}
 
-	std::vector<std::vector<RGB>> resizeArrayRgb = SSAA(RgbArray, resize);
+	std::vector<std::vector<RGB>> resizeArrayRgb = SSAA2(RgbArray);
 
 
 	unsigned char* rgbResult = new unsigned char[resizeArrayRgb.size() * resizeArrayRgb[0].size() * 3];
@@ -180,7 +193,7 @@ void ConvertPngToOgg::InitYCbCr_conver()
 	lodepng::load_file(png, pngArray[0].string());
 	unsigned error = lodepng::decode(image, width, height, png);
 
-	converter = ConverterOgg(width / resize, height / resize);
+	converter = ConverterOgg(width, height);
 	converter.SetOutputFile(outputFile);
 	converter.SetBlackWhiteImage(onlyAlpha);
 	png.clear();
@@ -193,6 +206,7 @@ void ConvertPngToOgg::LogPercentConverter(int i, int size)
 	
 	if (i != size)
 	{
+		system("cls");
 		std::cout << "Precent converting: " << ((float)i / (float)size) * 100 << std::endl;
 	}
 	else
