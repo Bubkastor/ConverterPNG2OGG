@@ -29,6 +29,32 @@
   <ItemGroup>
     <ClInclude Include="ConvertPngToOgg.h" />
     <ClInclude Include="ConverterOgg.h" />
+    <ClInclude Include="vendor\include\ogg\ogg.h" />
+    <ClInclude Include="vendor\include\ogg\os_types.h" />
+    <ClInclude Include="vendor\include\theora\codec.h" />
+    <ClInclude Include="vendor\include\theora\theora.h" />
+    <ClInclude Include="vendor\include\theora\theoradec.h" />
+    <ClInclude Include="vendor\include\theora\theoraenc.h" />
+    <ClInclude Include="vendor\include\vorbis\codec.h" />
+    <ClInclude Include="vendor\include\vorbis\vorbisenc.h" />
+    <ClInclude Include="vendor\include\vorbis\vorbisfile.h" />
+    <ClInclude Include="vendor\include\zlib\crc32.h" />
+    <ClInclude Include="vendor\include\zlib\deflate.h" />
+    <ClInclude Include="vendor\include\zlib\gzguts.h" />
+    <ClInclude Include="vendor\include\zlib\inffast.h" />
+    <ClInclude Include="vendor\include\zlib\inffixed.h" />
+    <ClInclude Include="vendor\include\zlib\inflate.h" />
+    <ClInclude Include="vendor\include\zlib\inftrees.h" />
+    <ClInclude Include="vendor\include\zlib\trees.h" />
+    <ClInclude Include="vendor\include\zlib\zconf.h" />
+    <ClInclude Include="vendor\include\zlib\zlib.h" />
+    <ClInclude Include="vendor\include\zlib\zutil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="vendor\lib\libogg_static.lib" />
+    <Library Include="vendor\lib\libtheora_static.lib" />
+    <Library Include="vendor\lib\libvorbisfile_static.lib" />
+    <Library Include="vendor\lib\libvorbis_static.lib" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5F8620D8-EB4E-49A3-BB69-E33D8626597A}</ProjectGuid>
